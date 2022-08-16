@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        console.log( '문제 링크 : https://www.acmicpc.net/problem/2798' );
+
+
+        /**
+         * N과 M 입력 후 버튼 클릭시
+         *  : N장 카드값의 합이 M과 가장 가까운 경우 찾기
+         */
+        function setCardList() {
+            const n = document.getElementById( 'N' );
+            const m = document.getElementById( 'M' );
+            const cardList = document.getElementById( 'cardList' );
+
+            let nVal = parseInt( n.value );
+            let mVal = parseInt( m.value );
+
+            // 입력 받는 N과 M의 정합성 체크
+            if( !( 3 <= nVal && 100 >= nVal ) ) {
+                alert( '카드의 개수는 3보다 크거나 같고 100보다 작거나 같아야 합니다.' );
+                n.value = 3;
+                return ;
+            }
+            if( !( 10 <= mVal && 300000 >= mVal ) ) {
+                alert( '최대값은 10보다 크거나 같고 300,000보다 작거나 같아야 합니다.' );
+                m.value = 10;
+                return ;
+            }
+            if( nVal >= mVal ) {
+                alert( 'N은 M보다 작아야합니다.' );
+                return ;
+            }
+
+            // 카드 리스트 초기화
+            cardList.innerHTML = '';
+
+            let cardArray = []; // 카드 리스트
+            let template = '';
+
+            // N장의 카드 세팅
+            for ( let i = 0; i < nVal; i++ ) {
+                // Math.floor((Math.random() * (최대값 - 최소값)) + 최소값)
+                const card = Math.floor( ( Math.random() * ( mVal - 1 ) ) + 1 );
+
+                // 카드 값 중복 제거
+                if( -1 === cardArray.indexOf( card ) ) {
+                    cardArray.push( card );
+                    template += '<input type="text" name="card" disabled value="' + card + '" style="width: 50px">'
+                } else {
+                    i--;
+                }
+
+            }
+            cardList.innerHTML = template;
+
+            // N장의 카드에서 3장의 합 구하기
+            cardSumResult( nVal, mVal, cardArray );
+        }
+
+
+        /**
+         * 계산 로직
+         * 1. 배열에서 각 3개씩 더한 값 구하기
+         * 2. 더한 값이 mVal과 가장 작거나 같은 케이스 구하기
+         */
+        function cardSumResult( nVal, mVal, cardArray ) {
+            const card = document.getElementsByName( 'card' );
+
+            let first   = 1; // 첫번째 자리수
+            let second = 2; // 두번째 자리수
+            let third  = 3; // 세번째 자리수
+            let gap    = 0; // 뽑은 카드 3장의 합과 m의 차이
+
+            /**
+             * 전체 n개 중에서 3 개를 순서없이 뽑는 경우의 수
+             * n * ( n - 1 ) * ( n - 2 ) / 3 * ( 3 - 1 ) * ( 3 - 2 )
+             */
+            let caseCount = ( nVal * ( nVal - 1 ) * ( nVal - 2 ))  / ( 3 * ( 3 - 1 ) * ( 3 - 2 ) );
+
+            // 카드 3장씩 뽑아서 더한 값 구하기
+            for( let i = 0; i < caseCount; i++ ){
+                let cardSum = cardArray[ first - 1 ] + cardArray[ second - 1 ] + cardArray[ third - 1 ];
+
+                const gap_ = mVal - cardSum;
+
+                // 카드의 합과 m이 같을 경우 종료
+                if( 0 === gap_ ) {
+                    document.getElementById( 'cardSum' ).value = ( cardSum );
+                    return ;
+                }
+
+                // 카드의 합과 m의 차이 구하기
+                if( 0 < gap_ ) {
+                    gap = gap_;
+                }
+
+                // 3장의 합이 M보다 큰 모든 경우에 카드 합을 0으로 세팅
+                if( ( caseCount - 1 ) === i ) {
+                    if( 0 === gap ) {
+                        document.getElementById( 'cardSum' ).value = ( 0 );
+                        return ;
+                    }
+                }
+
+                // 세번째 자리수가 최대치가 됬을때 두번째 자리수를 올려주고 초기화
+                if( third === nVal ) {
+
+                    // 두번째 자리수가 최대치가 됬을때 첫번째 자리수를 올려주고 초기화
+                    if( second === ( nVal - 1 ) ) {
+
+                        // 세번째 자리수가 최대치가 됬을때 종료
+                        if( first === ( nVal - 2 ) ) {
+                            document.getElementById( 'cardSum' ).value = ( mVal - gap );
+                            return ;
+
+                        } else {
+                            first += 1;
+                            second = first + 1;
+                            third = second + 1;
+                        }
+
+                    } else {
+                        second += 1;
+                        third = second + 1;
+                    }
+
+                } else {
+                    third += 1;
+                }
+
+            }
+        }
+    </script>
+    <title>블랙잭</title>
+</head>
+<body>
+    <p>딜러</p>
+    <label>
+        뽑을 카드 개수
+        <input type="number" id="N">
+    </label>
+    <p></p>
+    <label>
+        뽑은 3장의 카드 합 최대치
+        <input type="number" id="M">
+    </label>
+    <p></p>
+    <button type="button" onclick="setCardList();" style="width: 70px">카드 세팅</button>
+    <p></p>
+    <div id="cardList"></div>
+
+    <p>================================================================================</p>
+
+    <p>유저</p>
+    <label>
+        딜러가 준 카드의 합
+        <input type="number" id="cardSum" style="width: 70px" disabled>
+    </label>
+</body>
+</html>
